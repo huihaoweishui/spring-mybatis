@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+    <!-- Define the Shiro Realm implementation you want to use to connect to your back-end -->
+    <!-- security datasource: -->
+    <bean id="myRealm" class="com.example.common.MyCustomRealm">
+
+    </bean>
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- Single realm app.  If you have multiple realms, use the 'realms' property instead. -->
+        <property name="realm" ref="myRealm"/>
+        <!-- By default the servlet container sessions will be used.  Uncomment this line
+             to use shiro's native sessions (see the JavaDoc for more): -->
+        <!-- <property name="sessionMode" value="native"/> -->
+    </bean>
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <!-- override these for application-specific URLs if you like:
+        <property name="loginUrl" value="/login.jsp"/>
+        <property name="successUrl" value="/home.jsp"/>
+        <property name="unauthorizedUrl" value="/unauthorized.jsp"/> -->
+        <!-- The 'filters' property is not necessary since any declared javax.servlet.Filter bean  -->
+        <!-- defined will be automatically acquired and available via its beanName in chain        -->
+        <!-- definitions, but you can perform instance overrides or name aliases here if you like: -->
+        <!-- <property name="filters">
+            <util:map>
+                <entry key="anAlias" value-ref="someFilter"/>
+            </util:map>
+        </property> -->
+        <property name="loginUrl" value="/login"/>
+        <property name="successUrl" value="/home"/>
+        <property name="filterChainDefinitions">
+            <value>
+                # some example chain definitions:
+                /admin/** = authc
+                /docs/** = authc
+                /login = myCustomFormAutenticatorFilter
+                # more URL-to-FilterChain definitions here
+            </value>
+        </property>
+    </bean>
+    <!--登陆表单过滤器（可以替代我们自己写的登陆验证代码） 只有当请求方式是POST 而且请求参数需要与该过滤器配置的参数相同(默认是username password rememberMe);请求路径也要与该过滤器配置的路径相同(默认是/login.jsp),此处在上面shiroFilter中覆盖成/login-->
+    <bean id="myCustomFormAutenticatorFilter" class="com.example.common.myCustomFormAutenticatorFilter">
+        <!--shiro过滤器的loginUrl 和successUrl 可以由shiroFilter（见上）统一配置，可以避免重复-->
+        <!--<property name="loginUrl" value="/login"/>
+        <property name="successUrl" value="/"/>-->
+    </bean>
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!--相隔多久检查session的有效性-->
+        <property name="sessionValidationInterval" value="3600000"/>
+        <!--session有效时间-->
+        <property name="globalSessionTimeout" value="3600000"/>
+    </bean>
+</beans>
