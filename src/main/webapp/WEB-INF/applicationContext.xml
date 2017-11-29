@@ -37,6 +37,7 @@
                 /admin/** = authc
                 /docs/** = authc
                 /login = myCustomFormAutenticatorFilter
+                /front/** =anon
                 # more URL-to-FilterChain definitions here
             </value>
         </property>
